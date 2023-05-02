@@ -1,0 +1,199 @@
+import time
+import random
+
+win_ttt_dict = {'t1': [['t2', 't3'], ['m2', 'b3'], ['m1', 'b1']], 't2': [['t1', 't3'], ['m2', 'b2']], 't3': [['t1', 't2'], ['m3', 'b3'], ['m2', 'b1']], 
+                'm1': [['t1', 'b1'], ['m2', 'm3']], 'm2': [['t1', 'b3'], ['t2', 'b2'], ['t3', 'b1'], ['m1', 'm3']], 'm3': [['m1', 'm2'], ['t3', 'b3']], 
+                'b1': [['t1', 'm1'], ['b2', 'b3'], ['m2', 't3']], 'b2': [['m2', 't2'], ['b1', 'b3']], 'b3': [['b1', 'b2'], ['m3', 't3'], ['m2', 't1']]}
+
+def check_if_win(user_move, dict, win_condition):
+    win_ttt_dict = {'t1': [['t2', 't3'], ['m2', 'b3'], ['m1', 'b1']], 't2': [['t1', 't3'], ['m2', 'b2']], 't3': [['t1', 't2'], ['m3', 'b3'], ['m2', 'b1']], 
+                'm1': [['t1', 'b1'], ['m2', 'm3']], 'm2': [['t1', 'b3'], ['t2', 'b2'], ['t3', 'b1'], ['m1', 'm3']], 'm3': [['m1', 'm2'], ['t3', 'b3']], 
+                'b1': [['t1', 'm1'], ['b2', 'b3'], ['m2', 't3']], 'b2': [['m2', 't2'], ['b1', 'b3']], 'b3': [['b1', 'b2'], ['m3', 't3'], ['m2', 't1']]}
+    
+    X_or_O = dict[user_move]
+    for lists in win_ttt_dict[user_move]:
+        if dict[lists[0]] ==X_or_O and dict[lists[1]] == X_or_O:
+            return win_condition.append('win')
+
+    return win_condition
+
+def add_player_mark(board_dict, win_condition):
+    current_board = "  1|2|3\n" + "t|" + board_dict['t1'] + "|" + board_dict['t2'] + "|" + board_dict['t3'] + "\n" + "m|" + board_dict['m1'] + "|" + board_dict['m2'] + "|" + board_dict['m3'] + "\n" + "b|" + board_dict['b1'] + "|" + board_dict['b2'] + "|" + board_dict['b3']
+    print("\nThe current board state: \n" + current_board)
+    time.sleep(1)
+    current_input = input("Where would you like to place your 'X'? " )
+    if current_input in board_dict.keys():
+        if board_dict[current_input] != 'O' and board_dict[current_input] != 'X':
+             board_dict[current_input] = 'X'
+             check_if_win(current_input, board_dict, win_condition)
+             return current_input
+
+        else: 
+            print("That square is already taken! Please try again!")
+            time.sleep(2)
+            return add_player_mark(board_dict, win_condition)
+    else:
+        print("That is not a valid choice. Remember to use row letter followed by column number like 't1' or 'b3'!")
+        time.sleep(2)
+        return add_player_mark(board_dict, win_condition)
+
+
+def add_ai_mark(board_dict, win_condition, player_move, ai_move):
+    choices = ['t1', 't2', 't3', 'm1', 'm3', 'b1', 'b2', 'b3']
+    corners = ['t1', 't3', 'b1', 'b3']
+    sides = ['t2', 'm1', 'm3', 'b2']
+    player_move = player_move
+    
+    #ai try for win
+    if ai_move is not None:
+        for lists in win_ttt_dict[ai_move]:
+            if board_dict[lists[0]] == 'O' and board_dict[lists[1]] != "X":
+                board_dict[lists[1]] = 'O'
+                ai_choice = lists[1]
+                print(f"The Computer placed an 'O' in square {ai_choice}!")
+                check_if_win(ai_choice, board_dict, win_condition)
+                return ai_choice
+
+            elif board_dict[lists[1]] == 'O' and board_dict[lists[0]] != "X":
+                board_dict[lists[0]] = 'O'
+                ai_choice = lists[0]
+                print(f"The Computer placed an 'O' in square {ai_choice}!")
+                check_if_win(ai_choice, board_dict, win_condition)
+                return ai_choice
+    #ai trying to block
+    for lists in win_ttt_dict[player_move]:
+        if board_dict[lists[0]] == 'X' and board_dict[lists[1]] != "O":
+            board_dict[lists[1]] = 'O'
+            ai_choice = lists[1]
+            print(f"The Computer placed an 'O' in square {ai_choice}!")
+            check_if_win(ai_choice, board_dict, win_condition)
+            return ai_choice
+        
+        elif board_dict[lists[1]] == 'X' and board_dict[lists[0]] != "O":
+            board_dict[lists[0]] = 'O'
+            ai_choice = lists[0]
+            print(f"The Computer placed an 'O' in square {ai_choice}!")
+            check_if_win(ai_choice, board_dict, win_condition)
+            return ai_choice
+    #middle choice
+    if board_dict['m2'] == '-':
+        board_dict['m2'] = 'O'
+        print("The Computer placed an 'O' in square m2!")
+        return 'm2'
+    #corners
+    elif corners is not None:
+        ai_choice = random.choice(corners)
+        corners.remove(ai_choice)
+        if board_dict[ai_choice] != 'O' and board_dict[ai_choice] != 'X':
+             board_dict[ai_choice] = 'O'
+             print(f"The Computer placed an 'O' in square {ai_choice}!")
+             check_if_win(ai_choice, board_dict, win_condition)
+             return ai_choice
+        else:
+            add_ai_mark(board_dict, win_condition, player_move, ai_move)
+    #sides
+    else:
+        ai_choice = random.choice(sides)
+        sides.remove(ai_choice)
+        if board_dict[ai_choice] != 'O' and board_dict[ai_choice] != 'X':
+             board_dict[ai_choice] = 'O'
+             print(f"The Computer placed an 'O' in square {ai_choice}!")
+             check_if_win(ai_choice, board_dict, win_condition)
+             return ai_choice
+        else:
+            add_ai_mark(board_dict, win_condition, player_move, ai_move)
+
+
+
+def play_tic_tac_toe(player_name, playerwins=0, aiwins=0, draw=0):
+    
+    print("\n\nLet's play some Tic Tac Toe, " + player_name +"!")
+    time.sleep(3)
+
+    board_dict = {'t1': '-', 't2': '-', 't3': '-', 'm1': '-', 'm2': '-', 'm3': '-', 'b1': '-', 'b2': '-', 'b3': '-'}
+    player_wins = playerwins
+    ai_wins = aiwins
+    draws = draw
+    
+    guide = "To place your 'X' in the appropriate position, enter the row then column. Example: t1 for the top left square!"
+    if playerwins == 0 and aiwins == 0 and draw ==0:
+        print(guide)
+        time.sleep(5)
+    counter = 0
+    win_condition = []
+
+    while win_condition == []:
+        player_move = add_player_mark(board_dict, win_condition)
+    
+        if win_condition != []:
+            winning_list = [player_move]
+            for lists in win_ttt_dict[player_move]:
+                if board_dict[lists[0]] == 'X' and board_dict[lists[1]] == 'X':
+                    winning_list.append(lists[0])
+                    winning_list.append(lists[1])
+            player_wins += 1
+            time.sleep(1)
+            print("\nCongratulations, you win! Your winning moves: " + str(winning_list))
+            break
+        
+        new_count = 0
+        for square, value in board_dict.items():
+            if value != '-':
+                new_count += 1
+        if new_count == 9:
+            time.sleep(1)
+            print("\nThe game is a draw!")
+            time.sleep(1)
+            final_board = "  1|2|3\n" + "t|" + board_dict['t1'] + "|" + board_dict['t2'] + "|" + board_dict['t3'] + "\n" + "m|" + board_dict['m1'] + "|" + board_dict['m2'] + "|" + board_dict['m3'] + "\n" + "b|" + board_dict['b1'] + "|" + board_dict['b2'] + "|" + board_dict['b3']
+            print("The final board state: \n" + final_board)
+            time.sleep(3)
+            draws += 1
+            print(f"\nCurrent standings are: \nGames won by {player_name}: {player_wins} \nGames won by the Computer: {ai_wins} \nDraws: {draws}")
+            time.sleep(3)
+            play_again = input("\nWould you like to play again y/n?" )
+            if play_again == 'y':
+                play_tic_tac_toe(player_name, player_wins, ai_wins, draws)
+            else:
+                return
+
+        if counter == 0:
+            ai_move = None
+        print("\nThe Computer is making its move...")
+        time.sleep(1)
+        ai_move = add_ai_mark(board_dict, win_condition, player_move, ai_move)
+        time.sleep(1)
+        counter += 1
+        
+        if win_condition != []:
+            winning_list = [ai_move]
+            for lists in win_ttt_dict[ai_move]:
+                if board_dict[lists[0]] == 'O' and board_dict[lists[1]] == 'O':
+                    winning_list.append(lists[0])
+                    winning_list.append(lists[1])
+            ai_wins += 1
+            time.sleep(1)
+            print("\nSorry, you lose! The Computer won with the following moves: " + str(winning_list))
+            break
+        
+            
+
+    time.sleep(3)
+    final_board = "  1|2|3\n" + "t|" + board_dict['t1'] + "|" + board_dict['t2'] + "|" + board_dict['t3'] + "\n" + "m|" + board_dict['m1'] + "|" + board_dict['m2'] + "|" + board_dict['m3'] + "\n" + "b|" + board_dict['b1'] + "|" + board_dict['b2'] + "|" + board_dict['b3']
+    print("The final board state: \n" + final_board)
+    time.sleep(3)
+    print(f"\nCurrent standings are: \nGames won by {player_name}: {player_wins} \nGames won by the Computer: {ai_wins} \nDraws: {draws}")
+
+    time.sleep(3)
+    play_again = input("\nWould you like to play again? y/n ")
+    if play_again == 'y':
+        play_tic_tac_toe(player_name, player_wins, ai_wins, draws)
+    
+
+    
+
+
+    
+
+
+player_name = input("Please enter your name: ")
+play_tic_tac_toe(player_name)
